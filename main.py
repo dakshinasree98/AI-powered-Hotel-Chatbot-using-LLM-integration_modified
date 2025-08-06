@@ -1,3 +1,10 @@
+from flask import Flask, request, jsonify
+import os
+import sqlite3
+from groq import Groq
+from dotenv import load_dotenv
+import logging
+from twilio.twiml.messaging_response import MessagingResponse
 
 # Initialize Flask app
 app = Flask(__name__)
