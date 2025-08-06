@@ -74,18 +74,27 @@ def fetch_room_details():
 
 # Classify the query
 def classify_query(query):
-    prompt = f"""Classify the following query:
-    1. Checking details - if it's about booking a hotel room
-    2. Getting information - if it's about general hotel info.
-    
-    Query: {query}
-    Respond with only the number (1 or 2)."""
+    prompt = """
+You are a hotel chatbot assistant. Classify the user's message into one of these categories and respond with only the category name (no numbers or explanation):
+
+- greeting: e.g. "Hi", "Hello", "Hey there"
+- room_availability: e.g. "Do you have rooms?", "Is a room available on Aug 20?", "Are rooms vacant?"
+- booking_request: e.g. "I want to book a room", "Can I book a room for 2 people?", "I'd like to make a reservation"
+- facilities_info: e.g. "What facilities do you offer?", "Is there WiFi?", "Do you have a pool?"
+- location_info: e.g. "Where is the hotel located?", "What's your address?", "How far are you from the beach?"
+- general_question: any other valid query that doesn’t fall into above
+- unknown: if the message is irrelevant or can’t be understood
+"""
+
     response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
+        model="llama3-70b-8192",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": query}
+        ],
         max_tokens=10
     )
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content.strip().lower()
 
 # Generate response
 def generate_response(query, context):
