@@ -148,6 +148,7 @@ def handle_query():
     response = generate_response(query, context)
     return jsonify({"response": response})
 
+# Twilio webhook for handling WhatsApp messages
 @app.route('/twilio_webhook', methods=['POST'])
 def twilio_webhook():
     phone_number = request.form.get('From')
