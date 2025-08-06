@@ -1,10 +1,3 @@
-from flask import Flask, request, jsonify
-import os
-import sqlite3
-from groq import Groq
-from dotenv import load_dotenv
-import logging
-
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -97,6 +90,7 @@ def generate_response(query, context):
         ],
         max_tokens=300
     )
+    
     return response.choices[0].message.content
 
 SYSTEM_PROMPT = """
@@ -137,3 +131,5 @@ def home():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=False)
+
+
