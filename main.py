@@ -16,14 +16,13 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 API_KEY = os.getenv("GROQ_API_KEY")
-
 if not API_KEY:
     raise ValueError("GROQ_API_KEY not found in environment variables")
 
 groq_client = Groq(api_key=API_KEY)
 
 # Hotel information constant
-HOTEL_INFO = """Thira Beach Home is a luxurious seaside retreat that seamlessly blends Italian-Kerala heritage architecture with modern luxury, creating an unforgettable experience. Nestled just 150 meters from the magnificent Arabian Sea, our beachfront property offers a secluded and serene escape with breathtaking 180-degree ocean views.
+HOTEL_INFO = """Thira Beach Home is a luxurious seaside retreat that seamlessly blends Italian-Kerala heritage architecture with modern luxury, creating an unforgettable experience. Nestled just 150 meters from the magnificent Arabian Sea, our beachfront property offers a secluded and serene escape with breathtaking 180-degree ocean views. 
 
 The accommodations feature Kerala-styled heat-resistant tiled roofs, natural stone floors, and lime-plastered walls, ensuring a perfect harmony of comfort and elegance. Each of our Luxury Ocean View Rooms is designed to provide an exceptional stay, featuring a spacious 6x6.5 ft cot with a 10-inch branded mattress encased in a bamboo-knitted outer layer for supreme comfort.
 
@@ -57,6 +56,7 @@ Location: Kothakulam Beach, Valappad, Thrissur, Kerala
 Contact: +91-94470 44788
 Email: thirabeachhomestay@gmail.com"""
 
+
 # Connect to SQLite database
 def connect_to_db():
     return sqlite3.connect('rooms.db')
@@ -80,13 +80,11 @@ def classify_query(query):
     
     Query: {query}
     Respond with only the number (1 or 2)."""
-    
     response = groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=10
     )
-    
     return response.choices[0].message.content.strip()
 
 # Generate response
@@ -94,13 +92,28 @@ def generate_response(query, context):
     response = groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
-            {"role": "system", "content": "You are Maya, a friendly hotel receptionist."},
+            {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": f"Query: {query}\nContext: {context}"}
         ],
         max_tokens=300
     )
     
     return response.choices[0].message.content
+
+SYSTEM_PROMPT = """
+You are Maya, a polite, helpful, and professional hotel receptionist at Thira Beach Home.
+
+Here are your rules:
+
+1. If the query is about booking a room or availability, always ask for check-in/check-out dates and number of guests. Then if the month has already passed(months before August), tell that "Please pick an upcoming date". If asked about August and September fetch the data from data provided and answer acordingly. If asked about months after September, say that "I dont have any information on that date. For more information please contact(give the contact details)"
+2. If the user asks about hotel facilities or services, provide relevant info from the hotel brochure.
+3. If the user is confused or asks vague questions, politely ask for clarification.
+4. Never mention you're an AI. Always speak as if you're a real receptionist.
+5. Keep responses short,clear, helpful and precise answers based on the given context.
+6. Always end your message with an invitation to ask more questions.
+7. Be conversational and natural, not robotic or repetitive. If user repeats something, summarize what you said earlier and ask if they want more help
+8. If a customer says that they want to book a room, please provide the contact number and ask them to contact.
+"""
 
 @app.route('/query', methods=['GET'])
 def handle_query():
@@ -119,34 +132,11 @@ def handle_query():
     response = generate_response(query, context)
     return jsonify({"response": response})
 
-# Twilio webhook for handling WhatsApp messages
-@app.route('/twilio_webhook', methods=['POST'])
-def twilio_webhook():
-    phone_number = request.form.get('From')
-    message_body = request.form.get('Body')
-
-    if not phone_number or not message_body:
-        error_message = "<Response><Message>Error: Phone number and message are required.</Message></Response>"
-        return error_message, 400, {'Content-Type': 'application/xml'}
-
-    logger.info(f"Received WhatsApp message from {phone_number}: {message_body}")
-
-    query_type = classify_query(message_body)
-
-    if query_type == "1":
-        details = fetch_room_details()
-        response_text = generate_response(message_body, details)
-    elif query_type == "2":
-        response_text = generate_response(message_body, HOTEL_INFO)
-    else:
-        response_text = "Sorry, I couldn't understand your request."
-
-    # Twilio response
-    response = MessagingResponse()
-    response.message(response_text)
-
-    return str(response), 200, {'Content-Type': 'application/xml'}
-
+@app.route('/')
+def home():
+    return "Maya is up and running!"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=False)
+
+
