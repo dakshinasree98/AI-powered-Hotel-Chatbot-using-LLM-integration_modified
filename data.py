@@ -8,7 +8,7 @@ st.title("Room Database Viewer")
 # Function to connect to SQLite database and fetch data
 def get_data():
     try:
-        conn = sqlite3.connect("rooms.db")
+        conn = sqlite3.connect("rooms1.db")
         df = pd.read_sql_query("SELECT * FROM room_data", conn)
         conn.close()
         return df
@@ -28,7 +28,7 @@ if not data.empty:
     
     if st.button("Save Changes"):
         try:
-            conn = sqlite3.connect("rooms.db")
+            conn = sqlite3.connect("rooms1.db")
             updated_df = pd.DataFrame([{"title": title, "description": description}])
             updated_df.to_sql("room_data", conn, if_exists="replace", index=False)
             conn.close()
