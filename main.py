@@ -59,8 +59,7 @@ Email: thirabeachhomestay@gmail.com"""
 
 # Connect to SQLite database
 def connect_to_db():
-    return sqlite3.connect('rooms1
-    .db')
+    return sqlite3.connect('rooms1.db')
 
 # Fetch room details from the database
 def fetch_room_details():
