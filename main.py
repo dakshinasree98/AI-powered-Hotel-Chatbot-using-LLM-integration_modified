@@ -87,7 +87,7 @@ You are a hotel chatbot assistant. Classify the user's message into one of these
 """
 
     response = groq_client.chat.completions.create(
-        model="llama3-70b-8192",
+        model="openai/gpt-oss-120b",
         messages=[
             {"role": "system", "content": prompt},
             {"role": "user", "content": query}
